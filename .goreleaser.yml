@@ -1,0 +1,39 @@
+version: 2
+before:
+  hooks:
+    - go mod download
+builds:
+  - id: default
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    main: ./cmd/carapace-selfupdate
+    binary: carapace-selfupdate
+  - id: termux
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - android
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      - "386"
+    main: ./cmd/carapace-selfupdate
+    binary: carapace-selfupdate
+    gobinary: go-termux
+archives:
+  - id: default
+    builds:
+     - default
+    format_overrides:
+      - goos: windows
+        format: zip
+  - id: termux
+    builds:
+      - termux
+    name_template: '{{ .Binary }}_{{ .Version }}_termux_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+
