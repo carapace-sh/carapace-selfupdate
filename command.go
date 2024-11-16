@@ -19,6 +19,8 @@ func Command(owner, repository string, opts ...func(c *config)) *cobra.Command {
 		"nightly": "nightly",
 	}
 
+	carapace.Gen(cmd).Standalone()
+
 	carapace.Gen(cmd).PositionalCompletion(
 		carapace.ActionStyledValuesDescribed(
 			"stable", fmt.Sprintf("https://github.com/%v/%v", owner, repository), style.Green,
