@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/carapace-sh/carapace-selfupdate/filter"
 	"github.com/carapace-sh/carapace-selfupdate/transport"
@@ -107,4 +108,19 @@ func (c config) Download(tag, asset string) error {
 	defer f.Close()
 
 	return c.t.Download(c.repo, tag, asset, f)
+}
+
+func (c config) Checksums(tag string) (map[string]string, error) {
+	var b *bytes.Buffer
+	if err := c.t.Download(c.repo, tag, fmt.Sprintf("%v_checksums.txt", "TODO_prefix"), b); err != nil { // TODO prefix
+		return nil, err
+	}
+
+	m := make(map[string]string)
+	for _, line := range strings.Split(b.String(), "\n") {
+		if sum, file, ok := strings.Cut(line, " "); ok {
+			m[file] = sum
+		}
+	}
+	return m, nil
 }
