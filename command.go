@@ -10,8 +10,11 @@ import (
 
 func Command(owner, repository string, opts ...func(c *config)) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "selfupdate [source] [tag]",
-		Run: func(cmd *cobra.Command, args []string) {},
+		Use:  "selfupdate [source] [tag]",
+		Args: cobra.MinimumNArgs(1), // TODO
+		Run: func(cmd *cobra.Command, args []string) {
+			println("arr")
+		},
 	}
 
 	repo := map[string]string{
