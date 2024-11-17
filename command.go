@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Command(owner, repository string, opts ...func(c *config)) *cobra.Command {
+func Command(owner, repository string, opts ...option) *cobra.Command {
 	repo := map[string]string{
 		"stable":  repository,
 		"nightly": "nightly",
@@ -20,7 +20,7 @@ func Command(owner, repository string, opts ...func(c *config)) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			println("arr")
 			if len(args) > 2 { // TODO test
-				c := New(owner, repo[args[0]], opts...)
+				c := New(owner, repo[args[0]], append([]option{WithProgress(cmd.ErrOrStderr())}, opts...)...)
 				return c.Download(args[1], args[2])
 			}
 			return nil

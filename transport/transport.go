@@ -3,7 +3,7 @@ package transport
 import "io"
 
 type Transport interface {
-	Tags(repo string, out io.Writer) error
-	Assets(repo, tag string, out io.Writer) error
-	Download(repo, tag, asset string, out io.Writer) error
+	Tags(repo string, out, outErr io.Writer) error
+	Assets(repo, tag string, out, outErr io.Writer) error
+	Download(repo, tag, asset string, out, progress io.Writer) error
 }

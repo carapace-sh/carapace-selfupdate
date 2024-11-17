@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -14,13 +15,16 @@ import (
 )
 
 type config struct {
-	repo   string
-	binary string
-	filter func(asset string) bool
-	t      transport.Transport
+	repo     string
+	binary   string
+	filter   func(asset string) bool
+	progress io.Writer
+	t        transport.Transport
 }
 
-func New(owner, repository string, opts ...func(c *config)) *config {
+type option func(c *config)
+
+func New(owner, repository string, opts ...option) *config {
 	c := &config{
 		repo:   fmt.Sprintf("%v/%v", owner, repository),
 		binary: repository,
@@ -51,9 +55,15 @@ func WithTransport(t transport.Transport) func(c *config) {
 	}
 }
 
+func WithProgress(w io.Writer) func(c *config) {
+	return func(c *config) {
+		c.progress = w
+	}
+}
+
 func (c config) Assets(tag string) ([]string, error) {
 	var b bytes.Buffer
-	if err := c.t.Assets(c.repo, tag, &b); err != nil {
+	if err := c.t.Assets(c.repo, tag, &b, c.progress); err != nil {
 		return nil, err
 	}
 
@@ -78,7 +88,7 @@ func (c config) Assets(tag string) ([]string, error) {
 
 func (c config) Tags() ([]string, error) {
 	var b bytes.Buffer
-	if err := c.t.Tags(c.repo, &b); err != nil {
+	if err := c.t.Tags(c.repo, &b, c.progress); err != nil {
 		return nil, err
 	}
 
@@ -101,7 +111,6 @@ func (c config) Download(tag, asset string) error {
 	if err != nil {
 		return err
 	}
-	// defer os.Remove(tmpfile.Name())
 
 	f, err := os.Create(tmpfile.Name())
 	if err != nil {
@@ -115,10 +124,7 @@ func (c config) Download(tag, asset string) error {
 	}
 	println("checksum:" + sum)
 
-	println("download start")
-	err = c.t.Download(c.repo, tag, asset, f)
-	println("download end")
-	return err
+	return c.t.Download(c.repo, tag, asset, f, c.progress)
 }
 
 func (c config) Checksum(tag, asset string) (string, error) {
@@ -129,7 +135,7 @@ func (c config) Checksum(tag, asset string) (string, error) {
 	}
 
 	b := &bytes.Buffer{}
-	if err := c.t.Download(c.repo, tag, fmt.Sprintf("%v_checksums.txt", matches[1]), b); err != nil {
+	if err := c.t.Download(c.repo, tag, fmt.Sprintf("%v_checksums.txt", matches[1]), b, c.progress); err != nil {
 		return "", err
 	}
 
