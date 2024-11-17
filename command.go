@@ -18,6 +18,7 @@ func Command(owner, repository string, opts ...func(c *config)) *cobra.Command {
 	}
 
 	cmd.Flags().BoolP("all", "a", false, "show all tags/assets")          // TODO disable filters
+	cmd.Flags().BoolP("help", "h", false, "help for selfupdate")          // TODO use cobras help flag
 	cmd.Flags().Bool("no-verify", false, "disable checksum verification") // TODO disable verification
 
 	repo := map[string]string{
