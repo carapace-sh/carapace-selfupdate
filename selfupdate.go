@@ -3,8 +3,10 @@ package selfupdate
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/carapace-sh/carapace-selfupdate/filter"
@@ -107,13 +109,25 @@ func (c config) Download(tag, asset string) error {
 	}
 	defer f.Close()
 
+	sum, err := c.Checksum(tag, asset)
+	if err != nil {
+		return err
+	}
+	println(sum)
+
 	return c.t.Download(c.repo, tag, asset, f)
 }
 
-func (c config) Checksums(tag string) (map[string]string, error) {
+func (c config) Checksum(tag, asset string) (string, error) {
+	r := regexp.MustCompile(`^(?P<prefix>[^_]+_[^_]+_).*$`)
+	matches := r.FindStringSubmatch(asset)
+	if matches == nil {
+		return "", errors.New(`asset does not match checksum pattern`)
+	}
+
 	var b *bytes.Buffer
-	if err := c.t.Download(c.repo, tag, fmt.Sprintf("%v_checksums.txt", "TODO_prefix"), b); err != nil { // TODO prefix
-		return nil, err
+	if err := c.t.Download(c.repo, tag, fmt.Sprintf("%v_checksums.txt", matches[1]), b); err != nil {
+		return "", err
 	}
 
 	m := make(map[string]string)
@@ -122,5 +136,5 @@ func (c config) Checksums(tag string) (map[string]string, error) {
 			m[file] = sum
 		}
 	}
-	return m, nil
+	return m[asset], nil
 }
