@@ -103,7 +103,7 @@ func (c config) Download(tag, asset string) error {
 	}
 	defer os.Remove(tmpfile.Name())
 
-	f, err := os.Open(tmpfile.Name())
+	f, err := os.Create(tmpfile.Name())
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,10 @@ func (c config) Download(tag, asset string) error {
 	}
 	println("checksum:" + sum)
 
-	return c.t.Download(c.repo, tag, asset, f)
+	println("download start")
+	err = c.t.Download(c.repo, tag, asset, f)
+	println("download end")
+	return err
 }
 
 func (c config) Checksum(tag, asset string) (string, error) {
