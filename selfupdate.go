@@ -133,8 +133,6 @@ func (c config) Checksum(tag, asset string) (string, error) {
 	m := make(map[string]string)
 	for _, line := range strings.Split(b.String(), "\n") {
 		if sum, file, ok := strings.Cut(line, "  "); ok {
-			println(file)
-			println(asset)
 			m[file] = sum
 		}
 	}
