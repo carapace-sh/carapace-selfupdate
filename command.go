@@ -40,14 +40,22 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 			"nightly", fmt.Sprintf("https://github.com/%v/nightly", owner), style.Red,
 		),
 		carapace.ActionCallback(func(c carapace.Context) carapace.Action {
-			tags, err := New(owner, repo[c.Args[0]], append(opts, WithProgress(io.Discard))...).Tags()
+			opts = append(opts, WithProgress(io.Discard))
+			if cmd.Flag("all").Changed {
+				opts = append(opts, WithAssetFilter(nil))
+			}
+			tags, err := New(owner, repo[c.Args[0]], opts...).Tags()
 			if err != nil {
 				return carapace.ActionMessage(err.Error())
 			}
 			return carapace.ActionValues(tags...)
 		}),
 		carapace.ActionCallback(func(c carapace.Context) carapace.Action {
-			assets, err := New(owner, repo[c.Args[0]], append(opts, WithProgress(io.Discard))...).Assets(c.Args[1])
+			opts = append(opts, WithProgress(io.Discard))
+			if cmd.Flag("all").Changed {
+				opts = append(opts, WithAssetFilter(nil))
+			}
+			assets, err := New(owner, repo[c.Args[0]], opts...).Assets(c.Args[1])
 			if err != nil {
 				return carapace.ActionMessage(err.Error())
 			}
