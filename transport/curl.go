@@ -3,6 +3,7 @@ package transport
 import (
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 )
 
@@ -11,6 +12,7 @@ type Curl struct{}
 func (c *Curl) retrieve(url string, out io.Writer) error {
 	command := exec.Command("curl", "-L", url)
 	command.Stdout = out
+	command.Stderr = os.Stderr
 	return command.Run()
 }
 
@@ -25,6 +27,6 @@ func (c *Curl) Assets(repo, tag string, out io.Writer) error {
 }
 
 func (c *Curl) Download(repo, tag, asset string, out io.Writer) error {
-	url := fmt.Sprintf("https://github.com/%v/releases/download/%v/%v, repo, tag, asset", repo, tag, asset)
+	url := fmt.Sprintf("https://github.com/%v/releases/download/%v/%v", repo, tag, asset)
 	return c.retrieve(url, out)
 }

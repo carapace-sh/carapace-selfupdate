@@ -113,19 +113,19 @@ func (c config) Download(tag, asset string) error {
 	if err != nil {
 		return err
 	}
-	println(sum)
+	println("checksum:" + sum)
 
 	return c.t.Download(c.repo, tag, asset, f)
 }
 
 func (c config) Checksum(tag, asset string) (string, error) {
-	r := regexp.MustCompile(`^(?P<prefix>[^_]+_[^_]+_).*$`)
+	r := regexp.MustCompile(`^(?P<prefix>[^_]+_[^_]+)_.*$`)
 	matches := r.FindStringSubmatch(asset)
 	if matches == nil {
 		return "", errors.New(`asset does not match checksum pattern`)
 	}
 
-	var b *bytes.Buffer
+	b := &bytes.Buffer{}
 	if err := c.t.Download(c.repo, tag, fmt.Sprintf("%v_checksums.txt", matches[1]), b); err != nil {
 		return "", err
 	}
