@@ -101,7 +101,7 @@ func (c config) Download(tag, asset string) error {
 	if err != nil {
 		return err
 	}
-	defer os.Remove(tmpfile.Name())
+	// defer os.Remove(tmpfile.Name())
 
 	f, err := os.Create(tmpfile.Name())
 	if err != nil {
