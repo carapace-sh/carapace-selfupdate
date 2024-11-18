@@ -37,11 +37,20 @@ func Execute(version string) error {
 func init() {
 	carapace.Gen(rootCmd).Standalone()
 
-	cmd := selfupdate.Command("carapace-sh", "carapace-shlex")
+	cmd := selfupdate.Command("carapace-sh", "carapace-bin", selfupdate.WithBinary("carapace"), selfupdate.WithAssetFilter(filter.Goreleaser("carapace-bin")))
+	cmd.Use = "carapace"
+	rootCmd.AddCommand(cmd)
+
+	cmd = selfupdate.Command("carapace-sh", "carapace-bridge", selfupdate.WithAssetFilter(filter.Goreleaser("carapace-bridge")))
+	cmd.Use = "bridge"
+	rootCmd.AddCommand(cmd)
+
+	cmd = selfupdate.Command("carapace-sh", "carapace-shlex", selfupdate.WithAssetFilter(filter.Goreleaser("carapace-shlex")))
 	cmd.Use = "shlex"
 	rootCmd.AddCommand(cmd)
 
-	cmd = selfupdate.Command("carapace-sh", "carapace-bin", selfupdate.WithBinary("carapace"), selfupdate.WithAssetFilter(filter.Goreleaser("carapace-bin")))
-	cmd.Use = "carapace"
+	cmd = selfupdate.Command("carapace-sh", "carapace-spec", selfupdate.WithAssetFilter(filter.Goreleaser("carapace-spec")))
+	cmd.Use = "spec"
 	rootCmd.AddCommand(cmd)
+
 }
