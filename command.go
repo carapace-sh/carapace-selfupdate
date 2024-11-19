@@ -5,11 +5,13 @@ import (
 	"io"
 
 	"github.com/carapace-sh/carapace"
+	"github.com/carapace-sh/carapace-selfupdate/filter"
 	"github.com/carapace-sh/carapace/pkg/style"
 	"github.com/spf13/cobra"
 )
 
 func Command(owner, repository string, opts ...option) *cobra.Command {
+	opts = append([]option{WithAssetFilter(filter.Goreleaser(repository))}, opts...)
 	repo := map[string]string{
 		"stable":  repository,
 		"nightly": "nightly",

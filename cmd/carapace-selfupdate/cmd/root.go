@@ -6,7 +6,6 @@ import (
 
 	"github.com/carapace-sh/carapace"
 	selfupdate "github.com/carapace-sh/carapace-selfupdate"
-	"github.com/carapace-sh/carapace-selfupdate/filter"
 	"github.com/carapace-sh/carapace/pkg/traverse"
 	"github.com/spf13/cobra"
 )
@@ -37,19 +36,19 @@ func Execute(version string) error {
 func init() {
 	carapace.Gen(rootCmd).Standalone()
 
-	cmd := selfupdate.Command("carapace-sh", "carapace-bin", selfupdate.WithBinary("carapace"), selfupdate.WithAssetFilter(filter.Goreleaser("carapace-bin")))
+	cmd := selfupdate.Command("carapace-sh", "carapace-bin", selfupdate.WithBinary("carapace"))
 	cmd.Use = "carapace"
 	rootCmd.AddCommand(cmd)
 
-	cmd = selfupdate.Command("carapace-sh", "carapace-bridge", selfupdate.WithAssetFilter(filter.Goreleaser("carapace-bridge")))
+	cmd = selfupdate.Command("carapace-sh", "carapace-bridge")
 	cmd.Use = "bridge"
 	rootCmd.AddCommand(cmd)
 
-	cmd = selfupdate.Command("carapace-sh", "carapace-shlex", selfupdate.WithAssetFilter(filter.Goreleaser("carapace-shlex")))
+	cmd = selfupdate.Command("carapace-sh", "carapace-shlex")
 	cmd.Use = "shlex"
 	rootCmd.AddCommand(cmd)
 
-	cmd = selfupdate.Command("carapace-sh", "carapace-spec", selfupdate.WithAssetFilter(filter.Goreleaser("carapace-spec")))
+	cmd = selfupdate.Command("carapace-sh", "carapace-spec")
 	cmd.Use = "spec"
 	rootCmd.AddCommand(cmd)
 
