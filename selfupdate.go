@@ -7,11 +7,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/carapace-sh/carapace"
 	"github.com/carapace-sh/carapace-selfupdate/filter"
 	"github.com/carapace-sh/carapace-selfupdate/transport"
+	"github.com/carapace-sh/carapace/pkg/traverse"
 )
 
 type config struct {
@@ -106,25 +110,85 @@ func (c config) Tags() ([]string, error) {
 	return names, nil
 }
 
-func (c config) Download(tag, asset string) error {
-	tmpfile, err := os.CreateTemp(os.TempDir(), "carapace-selfupdate_")
+func (c config) Install(tag, asset string) error {
+	ext := strings.Replace(filepath.Ext(asset), ".gz", ".tar.gz", 1)
+	tmpArchive, err := os.CreateTemp(os.TempDir(), "carapace-selfupdate_*"+ext)
 	if err != nil {
 		return err
 	}
+	// defer os.Remove(tmpfile.Name()) // TODO
 
-	f, err := os.Create(tmpfile.Name())
+	f, err := os.Create(tmpArchive.Name())
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
+	if err := c.Download(tag, asset, f); err != nil {
+		return err
+	}
+
 	sum, err := c.Checksum(tag, asset)
 	if err != nil {
 		return err
 	}
-	println("checksum:" + sum)
 
-	return c.t.Download(c.repo, tag, asset, f, c.progress)
+	binDir, err := traverse.GoBinDir(carapace.NewContext())
+	if err != nil {
+		return err
+	}
+
+	fExecutable, err := os.Create(filepath.Join(binDir, c.binary+".selfupdate"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if err := c.extract(tmpArchive.Name(), fExecutable); err != nil {
+		return err
+	}
+
+	if err := os.Chmod(fExecutable.Name(), 0755); err != nil {
+		return err
+	}
+
+	if err := fExecutable.Close(); err != nil {
+		return err
+	}
+
+	fmt.Fprintln(c.progress, "executing file")
+	if err := exec.Command(fExecutable.Name(), "--version").Run(); err != nil {
+		return err
+	}
+
+	println(filepath.Join(binDir, c.binary))
+	if err = os.Rename(fExecutable.Name(), filepath.Join(binDir, c.binary)); err != nil {
+		return err
+	}
+
+	println(fExecutable.Name())
+	println("checksum:" + sum)
+	return nil
+}
+
+func (c config) extract(source string, out io.Writer) error {
+	fmt.Fprint(c.progress, "extracting archive")
+	switch {
+	case strings.HasSuffix(source, ".tar.gz"):
+		command := exec.Command("tar", "--to-stdout", "-xzvf", source, c.binary)
+		command.Stdout = out
+		command.Stderr = c.progress
+		return command.Run()
+	case strings.HasSuffix(source, ".zip"):
+		return nil // TODO
+	default:
+		return errors.New("unknown extension")
+	}
+}
+
+func (c config) Download(tag, asset string, out io.Writer) error {
+	fmt.Fprintf(c.progress, "downloading %#v", asset)
+	return c.t.Download(c.repo, tag, asset, out, c.progress)
 }
 
 func (c config) Checksum(tag, asset string) (string, error) {
