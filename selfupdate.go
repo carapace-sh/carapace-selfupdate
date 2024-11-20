@@ -119,7 +119,7 @@ func (c config) Println(s string) {
 }
 
 func (c config) Printf(format string, any ...any) {
-	fmt.Fprintf(c.progress, "[94m"+format+"[0m", any...)
+	fmt.Fprintf(c.progress, "[1;2m"+format+"[0m", any...)
 }
 
 func (c config) Install(tag, asset string) error {
@@ -174,21 +174,29 @@ func (c config) Install(tag, asset string) error {
 		return err
 	}
 
-	c.Println("checking executable format")
-	if err := exec.Command(fExecutable.Name(), "--version").Run(); err != nil {
+	c.Println("verifying format")
+	if err := c.verify(fExecutable.Name()); err != nil {
 		return err
 	}
 
-	println(filepath.Join(binDir, c.binary))
-	if err = os.Rename(fExecutable.Name(), filepath.Join(binDir, c.binary)); err != nil {
+	target := filepath.Join(binDir, c.binary)
+	c.Printf("moving to %#v\n", target)
+	if err = os.Rename(fExecutable.Name(), target); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+func (c config) verify(executable string) error {
+	command := exec.Command(executable, "--version")
+	command.Stdout = c.progress
+	command.Stderr = c.progress
+	return command.Run()
+}
+
 func (c config) extract(source string, out io.Writer) error {
-	c.Println("extracting archive")
+	c.Println("extracting binary")
 	switch {
 	case strings.HasSuffix(source, ".tar.gz"):
 		command := exec.Command("tar", "--to-stdout", "-xzvf", source, c.binary)
