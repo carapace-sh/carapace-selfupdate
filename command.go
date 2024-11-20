@@ -18,7 +18,7 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:  "selfupdate [source] [tag]",
+		Use:  "selfupdate [source] [tag] [asset]",
 		Args: cobra.MinimumNArgs(1), // TODO
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 2 { // TODO test
