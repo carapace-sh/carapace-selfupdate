@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/carapace-sh/carapace"
@@ -37,6 +38,9 @@ func New(owner, repository string, opts ...option) *config {
 	}
 	for _, opt := range opts {
 		opt(c)
+	}
+	if runtime.GOOS == "windows" {
+		c.binary += ".exe"
 	}
 	return c
 }
@@ -110,6 +114,14 @@ func (c config) Tags() ([]string, error) {
 	return names, nil
 }
 
+func (c config) Println(s string) {
+	c.Printf(s + "\n")
+}
+
+func (c config) Printf(format string, any ...any) {
+	fmt.Fprintf(c.progress, "[94m"+format+"[0m", any...)
+}
+
 func (c config) Install(tag, asset string) error {
 	ext := strings.Replace(filepath.Ext(asset), ".gz", ".tar.gz", 1)
 	tmpArchive, err := os.CreateTemp(os.TempDir(), "carapace-selfupdate_*"+ext)
@@ -158,7 +170,7 @@ func (c config) Install(tag, asset string) error {
 		return err
 	}
 
-	fmt.Fprintln(c.progress, "executing file")
+	c.Println("checking executable format")
 	if err := exec.Command(fExecutable.Name(), "--version").Run(); err != nil {
 		return err
 	}
@@ -174,7 +186,7 @@ func (c config) Install(tag, asset string) error {
 }
 
 func (c config) extract(source string, out io.Writer) error {
-	fmt.Fprint(c.progress, "extracting archive")
+	c.Println("extracting archive")
 	switch {
 	case strings.HasSuffix(source, ".tar.gz"):
 		command := exec.Command("tar", "--to-stdout", "-xzvf", source, c.binary)
@@ -182,14 +194,17 @@ func (c config) extract(source string, out io.Writer) error {
 		command.Stderr = c.progress
 		return command.Run()
 	case strings.HasSuffix(source, ".zip"):
-		return nil // TODO
+		command := exec.Command("unzip", "-p", source, c.binary)
+		command.Stdout = out
+		command.Stderr = c.progress
+		return command.Run()
 	default:
 		return errors.New("unknown extension")
 	}
 }
 
 func (c config) Download(tag, asset string, out io.Writer) error {
-	fmt.Fprintf(c.progress, "downloading %#v", asset)
+	c.Printf("downloading %#v\n", asset)
 	return c.t.Download(c.repo, tag, asset, out, c.progress)
 }
 
