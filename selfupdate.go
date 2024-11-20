@@ -144,10 +144,10 @@ func (c config) Install(tag, asset string) error {
 		return err
 	}
 
-	sum, err := c.Checksum(tag, asset)
-	if err != nil {
-		return err
-	}
+	// sum, err := c.Checksum(tag, asset)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// TODO verify checksum
 
@@ -184,8 +184,6 @@ func (c config) Install(tag, asset string) error {
 		return err
 	}
 
-	println(fExecutable.Name())
-	println("checksum:" + sum)
 	return nil
 }
 
