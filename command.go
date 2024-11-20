@@ -19,7 +19,7 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:  "selfupdate [source] [tag] [asset]",
-		Args: cobra.MinimumNArgs(1), // TODO
+		Args: cobra.MinimumNArgs(3), // TODO implicit update to latest
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 2 { // TODO test
 				c := New(owner, repo[args[0]], append([]option{WithProgress(cmd.ErrOrStderr())}, opts...)...)
@@ -29,10 +29,10 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolP("all", "a", false, "show all tags/assets")          // TODO disable filters
-	cmd.Flags().BoolP("force", "f", false, "force")                       // TODO force
-	cmd.Flags().BoolP("help", "h", false, "help for selfupdate")          // TODO use cobras help flag
-	cmd.Flags().Bool("no-verify", false, "disable checksum verification") // TODO disable verification
+	cmd.Flags().BoolP("all", "a", false, "show all tags/assets") // TODO disable filters
+	// cmd.Flags().BoolP("force", "f", false, "force")                       // TODO force
+	cmd.Flags().BoolP("help", "h", false, "help for selfupdate") // TODO use cobras help flag
+	// cmd.Flags().Bool("no-verify", false, "disable checksum verification") // TODO disable verification
 
 	carapace.Gen(cmd).Standalone()
 
