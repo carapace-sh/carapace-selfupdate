@@ -11,7 +11,10 @@ import (
 )
 
 func Command(owner, repository string, opts ...option) *cobra.Command {
-	opts = append([]option{WithAssetFilter(filter.Goreleaser(repository))}, opts...)
+	opts = append([]option{
+		WithBinary(repository),
+		WithAssetFilter(filter.Goreleaser(repository)),
+	}, opts...)
 	repo := map[string]string{
 		"stable":  repository,
 		"nightly": "nightly",
@@ -29,7 +32,7 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolP("all", "a", false, "show all tags/assets") // TODO disable filters
+	cmd.Flags().BoolP("all", "a", false, "show all tags/assets")
 	// cmd.Flags().BoolP("force", "f", false, "force")                       // TODO force
 	cmd.Flags().BoolP("help", "h", false, "help for selfupdate") // TODO use cobras help flag
 	// cmd.Flags().Bool("no-verify", false, "disable checksum verification") // TODO disable verification

@@ -1,33 +1,16 @@
 package cmd
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/carapace-sh/carapace"
 	selfupdate "github.com/carapace-sh/carapace-selfupdate"
-	"github.com/carapace-sh/carapace/pkg/traverse"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "carapace-selfupdate",
 	Short: "",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		su := selfupdate.New("carapace-sh", "carapace")
-		releases, err := su.Tags()
-		if err != nil {
-			return err
-		}
-		fmt.Println(strings.Join(releases, "\n"))
-
-		path, err := traverse.GoBinDir(carapace.NewContext())
-		if err != nil {
-			return err
-		}
-		fmt.Println(path)
-		return nil
-	}}
+	Run:   func(cmd *cobra.Command, args []string) {},
+}
 
 func Execute(version string) error {
 	rootCmd.Version = version
