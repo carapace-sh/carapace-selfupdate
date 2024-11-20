@@ -119,7 +119,7 @@ func (c config) Println(s string) {
 }
 
 func (c config) Printf(format string, any ...any) {
-	fmt.Fprintf(c.progress, "\x1b[1;2m"+format+"\x1b'[0m", any...)
+	fmt.Fprintf(c.progress, "\x1b[1;2m"+format+"\x1b[0m", any...)
 }
 
 func (c config) Install(tag, asset string) error {
