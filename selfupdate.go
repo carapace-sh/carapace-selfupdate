@@ -124,7 +124,7 @@ func (c config) Printf(format string, any ...any) {
 
 func (c config) Install(tag, asset string) error {
 	if !strings.HasSuffix(asset, ".tar.gz") && !strings.HasSuffix(asset, ".zip") {
-		return errors.New("unexpected extension [wants: .tar.gz|.zip]") // fail early
+		return errors.New("invalid extension [expected: .tar.gz|.zip]") // fail early
 	}
 
 	ext := strings.Replace(filepath.Ext(asset), ".gz", ".tar.gz", 1)
@@ -201,7 +201,7 @@ func (c config) extract(source string, out io.Writer) error {
 		command.Stderr = c.progress
 		return command.Run()
 	default:
-		return errors.New("unexpected extension [wants: .tar.gz|.zip]")
+		return errors.New("invalid extension [expected: .tar.gz|.zip]")
 	}
 }
 
