@@ -116,7 +116,7 @@ func (c config) Install(tag, asset string) error {
 	if err != nil {
 		return err
 	}
-	// defer os.Remove(tmpfile.Name()) // TODO
+	defer os.Remove(tmpArchive.Name())
 
 	f, err := os.Create(tmpArchive.Name())
 	if err != nil {
@@ -132,6 +132,8 @@ func (c config) Install(tag, asset string) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO verify checksum
 
 	binDir, err := traverse.GoBinDir(carapace.NewContext())
 	if err != nil {
