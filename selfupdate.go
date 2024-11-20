@@ -123,6 +123,10 @@ func (c config) Printf(format string, any ...any) {
 }
 
 func (c config) Install(tag, asset string) error {
+	if !strings.HasSuffix(asset, ".tar.gz") && !strings.HasSuffix(asset, ".zip") {
+		return errors.New("unknown extension") // fail early
+	}
+
 	ext := strings.Replace(filepath.Ext(asset), ".gz", ".tar.gz", 1)
 	tmpArchive, err := os.CreateTemp(os.TempDir(), "carapace-selfupdate_*"+ext)
 	if err != nil {
