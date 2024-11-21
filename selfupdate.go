@@ -156,12 +156,20 @@ func (c config) Install(tag, asset string) error {
 		return err
 	}
 
+	if _, err := os.Stat(binDir); errors.Is(err, os.ErrNotExist) {
+		c.Printf("creating directory %#v\n", binDir)
+		if err := os.MkdirAll(binDir, os.ModePerm); err != nil {
+			return err
+		}
+	}
+
 	fExecutable, err := os.Create(filepath.Join(binDir, c.binary+".selfupdate"))
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
+	c.Printf("extracting to %#v\n", fExecutable.Name())
 	if err := c.extract(tmpArchive.Name(), fExecutable); err != nil {
 		return err
 	}
@@ -196,7 +204,6 @@ func (c config) verify(executable string) error {
 }
 
 func (c config) extract(source string, out io.Writer) error {
-	c.Println("extracting binary")
 	switch {
 	case strings.HasSuffix(source, ".tar.gz"):
 		command := exec.Command("tar", "--to-stdout", "-xzvf", source, c.binary)
