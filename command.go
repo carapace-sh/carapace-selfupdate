@@ -21,8 +21,9 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:  "selfupdate [source] [tag] [asset]",
-		Args: cobra.MinimumNArgs(3), // TODO implicit update to latest
+		Use:   "selfupdate [source] [tag] [asset]",
+		Short: "install nightly/stable releases",
+		Args:  cobra.MinimumNArgs(3), // TODO implicit update to latest
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 2 { // TODO test
 				opts := append([]option{WithProgress(cmd.ErrOrStderr())}, opts...)
