@@ -4,14 +4,20 @@ Simple self-update mechanism to install nightly/stable releases.
 
 [![asciicast](https://asciinema.org/a/692857.svg)](https://asciinema.org/a/692857)
 
+Executable is installed to the [GOBIN] directory, essentially shadowing any system installation.
 
-- Relies on [curl] to avoid additional dependencies.
-- Installs to [GOBIN] directory which essentially shadows any system installation.
-- [PATH] needs to contain the [GOBIN] directory for this to work.
-  ```sh
-  export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
-  ```
-  > Executables are installed in the directory named by the GOBIN environment variable, which defaults to $GOPATH/bin or $HOME/go/bin if the GOPATH environment variable is not set. Executables in $GOROOT are installed in $GOROOT/bin or $GOTOOLDIR instead of $GOBIN.
+
+```sh
+export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
+#            │                │            └system installation (e.g. /usr/bin/carapace)
+#            │                └selfupdate/go based installation ($GOBIN)
+#            └user binaries
+```
+
+## Requirements
+
+- [curl] for downloads
+- [PATH] containing the [GOBIN] directory
 
 [curl]:https://curl.se
 [GOBIN]:https://pkg.go.dev/cmd/go#hdr-Compile_and_install_packages_and_dependencies
