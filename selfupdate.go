@@ -253,7 +253,7 @@ func (c config) extract(source string, out io.Writer) error {
 		command.Stderr = c.progress
 		return command.Run()
 	case strings.HasSuffix(source, ".zip"):
-		command := exec.Command("unzip", "-p", source, c.binary)
+		command := exec.Command("tar", "--to-stdout", "-xvf", source, c.binary)
 		command.Stdout = out
 		command.Stderr = c.progress
 		return command.Run()
