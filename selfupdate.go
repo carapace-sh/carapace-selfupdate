@@ -201,13 +201,13 @@ func (c config) Install(tag, asset string) error {
 	if err != nil {
 		return err
 	}
+	defer os.Remove(fExecutable.Name())
 	defer f.Close()
 
 	c.Printf("extracting to %#v\n", fExecutable.Name())
 	if err := c.extract(tmpArchive.Name(), fExecutable); err != nil {
 		return err
 	}
-	defer os.Remove(fExecutable.Name())
 
 	if err := os.Chmod(fExecutable.Name(), 0755); err != nil {
 		return err
@@ -230,12 +230,7 @@ func (c config) Install(tag, asset string) error {
 		}
 	}
 
-	c.Printf("moving to %#v\n", target)
-	if err = os.Rename(fExecutable.Name(), target); err != nil {
-		return err
-	}
-
-	return nil
+	return c.swap(fExecutable.Name(), target)
 }
 
 func (c config) verify(executable string) error {
