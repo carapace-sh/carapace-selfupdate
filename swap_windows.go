@@ -22,9 +22,11 @@ func (c config) swap(source, target string) error {
 		}
 	}
 
-	c.Printf("moving current executable to %#v\n", old)
-	if err := os.Rename(target, old); err != nil {
-		return err
+	if _, err := os.Stat(target); err == nil {
+		c.Printf("moving current executable to %#v\n", old)
+		if err := os.Rename(target, old); err != nil {
+			return err
+		}
 	}
 
 	c.Printf("moving new executable to %#v\n", target)
@@ -33,8 +35,11 @@ func (c config) swap(source, target string) error {
 		return err
 	}
 
-	c.Printf("hiding %#v\n", old)
-	return hide(old)
+	if _, err := os.Stat(old); err == nil {
+		c.Printf("hiding %#v\n", old)
+		return hide(old)
+	}
+	return nil
 }
 
 func hide(path string) error {
