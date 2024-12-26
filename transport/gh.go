@@ -21,11 +21,11 @@ func (t *Gh) Tags(repo string, out, progress io.Writer) error {
 }
 
 func (t *Gh) Assets(repo, tag string, out, progress io.Writer) error {
-	args := []string{"api", fmt.Sprintf("https://api.github.com/repos/%v/releases/tags/%v", repo, tag)}
+	args := []string{"api", fmt.Sprintf("repos/%v/releases/tags/%v", repo, tag)}
 	return t.retrieve(args, out, progress)
 }
 
 func (t *Gh) Download(repo, tag, asset string, out, progress io.Writer) error {
-	args := []string{"gh", "release", "download", "--repo", repo, tag, "--pattern", asset, "--output", "-"}
+	args := []string{"release", "download", "--repo", repo, tag, "--pattern", asset, "--output", "-"}
 	return t.retrieve(args, out, progress)
 }
