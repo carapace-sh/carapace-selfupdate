@@ -5,7 +5,7 @@ go 1.23.1
 require (
 	github.com/carapace-sh/carapace v1.10.3
 	github.com/carapace-sh/carapace-selfupdate v0.0.0-00010101000000-000000000000
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 )
 
 require (
