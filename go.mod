@@ -1,9 +1,9 @@
 module github.com/carapace-sh/carapace-selfupdate
 
-go 1.23.1
+go 1.24
 
 require (
-	github.com/carapace-sh/carapace v1.10.3
+	github.com/carapace-sh/carapace v1.11.0
 	github.com/spf13/cobra v1.10.2
 )
 
