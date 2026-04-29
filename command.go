@@ -23,17 +23,37 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "selfupdate [source] [tag] [asset]",
 		Short: "install nightly/stable releases",
-		Args:  cobra.MinimumNArgs(3), // TODO implicit update to latest
+		Args:  cobra.RangeArgs(1, 3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) > 2 { // TODO test
-				opts := append([]option{WithProgress(cmd.ErrOrStderr())}, opts...)
-				if cmd.Flag("force").Changed {
-					opts = append(opts, WithForce(true))
-				}
-				c := New(owner, repo[args[0]], opts...)
-				return c.Install(args[1], args[2])
+			opts := append([]option{WithProgress(cmd.ErrOrStderr())}, opts...)
+			if cmd.Flag("force").Changed {
+				opts = append(opts, WithForce(true))
 			}
-			return nil
+			c := New(owner, repo[args[0]], opts...)
+
+			if len(args) < 2 {
+				tags, err := c.Tags()
+				if err != nil {
+					return err
+				}
+				if len(tags) == 0 {
+					return fmt.Errorf("no tags found for %v", c.repo)
+				}
+				args = append(args, tags[0])
+			}
+
+			if len(args) < 3 {
+				assets, err := c.Assets(args[1])
+				if err != nil {
+					return err
+				}
+				if len(assets) == 0 {
+					return fmt.Errorf("no assets found for %v@%v", c.repo, args[1])
+				}
+				args = append(args, assets[0])
+			}
+
+			return c.Install(args[1], args[2])
 		},
 	}
 
