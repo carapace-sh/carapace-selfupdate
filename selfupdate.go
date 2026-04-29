@@ -167,12 +167,15 @@ func (c config) Install(tag, asset string) error {
 		return err
 	}
 
-	// sum, err := c.Checksum(tag, asset)
-	// if err != nil {
-	// 	return err
-	// }
+	sum, err := c.Checksum(tag, asset)
+	if err != nil {
+		return err
+	}
 
-	// TODO verify checksum
+	c.Printf("verifying checksum for %#v\n", asset)
+	if err := verifyChecksum(tmpArchive.Name(), sum); err != nil {
+		return err
+	}
 
 	binDir, err := traverse.GoBinDir(carapace.NewContext())
 	if err != nil {
