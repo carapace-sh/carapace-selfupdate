@@ -121,6 +121,32 @@ func (c config) Tags() ([]string, error) {
 	return names, nil
 }
 
+func (c config) resolve(tag, asset string) (string, string, error) {
+	if tag == "" {
+		tags, err := c.Tags()
+		if err != nil {
+			return "", "", err
+		}
+		if len(tags) == 0 {
+			return "", "", errors.New("no tags found")
+		}
+		tag = tags[0]
+	}
+
+	if asset == "" {
+		assets, err := c.Assets(tag)
+		if err != nil {
+			return "", "", err
+		}
+		if len(assets) == 0 {
+			return "", "", fmt.Errorf("no matching assets found for tag %q", tag)
+		}
+		asset = assets[0]
+	}
+
+	return tag, asset, nil
+}
+
 func (c config) Println(s string) {
 	c.Printf(s + "\n")
 }

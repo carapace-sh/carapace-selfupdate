@@ -23,17 +23,39 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "selfupdate [source] [tag] [asset]",
 		Short: "install nightly/stable releases",
-		Args:  cobra.MinimumNArgs(3), // TODO implicit update to latest
+		Args:  cobra.RangeArgs(1, 3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) > 2 { // TODO test
-				opts := append([]option{WithProgress(cmd.ErrOrStderr())}, opts...)
-				if cmd.Flag("force").Changed {
-					opts = append(opts, WithForce(true))
-				}
-				c := New(owner, repo[args[0]], opts...)
-				return c.Install(args[1], args[2])
+			repository, ok := repo[args[0]]
+			if !ok {
+				return fmt.Errorf("invalid source %q", args[0])
 			}
-			return nil
+
+			opts := append([]option{WithProgress(cmd.ErrOrStderr())}, opts...)
+			if cmd.Flag("force").Changed {
+				opts = append(opts, WithForce(true))
+			}
+
+			var tag, asset string
+			if len(args) > 1 {
+				tag = args[1]
+			}
+			if len(args) > 2 {
+				asset = args[2]
+			}
+
+			c := New(owner, repository, opts...)
+			resolvedTag, resolvedAsset, err := c.resolve(tag, asset)
+			if err != nil {
+				return err
+			}
+			if tag == "" {
+				c.Printf("selected tag %#v\n", resolvedTag)
+			}
+			if asset == "" {
+				c.Printf("selected asset %#v\n", resolvedAsset)
+			}
+
+			return c.Install(resolvedTag, resolvedAsset)
 		},
 	}
 
@@ -54,6 +76,9 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 			if cmd.Flag("all").Changed {
 				opts = append(opts, WithAssetFilter(nil))
 			}
+			if len(c.Args) == 0 {
+				return carapace.ActionMessage("missing source")
+			}
 			tags, err := New(owner, repo[c.Args[0]], opts...).Tags()
 			if err != nil {
 				return carapace.ActionMessage(err.Error())
@@ -64,6 +89,9 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 			opts = append(opts, WithProgress(io.Discard))
 			if cmd.Flag("all").Changed {
 				opts = append(opts, WithAssetFilter(nil))
+			}
+			if len(c.Args) < 2 {
+				return carapace.ActionMessage("missing tag")
 			}
 			assets, err := New(owner, repo[c.Args[0]], opts...).Assets(c.Args[1])
 			if err != nil {
