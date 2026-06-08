@@ -3,7 +3,7 @@ module github.com/carapace-sh/carapace-selfupdate
 go 1.24
 
 require (
-	github.com/carapace-sh/carapace v1.11.6
+	github.com/carapace-sh/carapace v1.11.7
 	github.com/spf13/cobra v1.10.2
 )
 
