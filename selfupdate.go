@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 
@@ -24,6 +23,7 @@ type config struct {
 	binary   string
 	filter   func(asset string) bool
 	force    bool
+	noVerify bool
 	progress io.Writer
 	t        transport.Transport
 }
@@ -61,6 +61,12 @@ func WithAssetFilter(f func(s string) bool) func(c *config) {
 func WithForce(b bool) func(c *config) {
 	return func(c *config) {
 		c.force = b
+	}
+}
+
+func WithNoVerify(b bool) func(c *config) {
+	return func(c *config) {
+		c.noVerify = b
 	}
 }
 
@@ -160,19 +166,23 @@ func (c config) Install(tag, asset string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
 	c.Printf("downloading to %#v\n", tmpArchive.Name())
 	if err := c.Download(tag, asset, f); err != nil {
+		_ = f.Close()
 		return err
 	}
 
-	// sum, err := c.Checksum(tag, asset)
-	// if err != nil {
-	// 	return err
-	// }
+	if err := f.Close(); err != nil {
+		return err
+	}
 
-	// TODO verify checksum
+	if !c.noVerify {
+		c.Printf("verifying checksum\n")
+		if err := c.verifyChecksum(tag, asset, tmpArchive.Name()); err != nil {
+			return err
+		}
+	}
 
 	binDir, err := traverse.GoBinDir(carapace.NewContext())
 	if err != nil {
@@ -202,7 +212,6 @@ func (c config) Install(tag, asset string) error {
 		return err
 	}
 	defer os.Remove(fExecutable.Name())
-	defer f.Close()
 
 	c.Printf("extracting to %#v\n", fExecutable.Name())
 	if err := c.extract(tmpArchive.Name(), fExecutable); err != nil {
@@ -259,25 +268,4 @@ func (c config) extract(source string, out io.Writer) error {
 
 func (c config) Download(tag, asset string, out io.Writer) error {
 	return c.t.Download(c.repo, tag, asset, out, c.progress)
-}
-
-func (c config) Checksum(tag, asset string) (string, error) {
-	r := regexp.MustCompile(`^(?P<prefix>[^_]+_[^_]+)_.*$`)
-	matches := r.FindStringSubmatch(asset)
-	if matches == nil {
-		return "", errors.New(`asset does not match checksum pattern`)
-	}
-
-	b := &bytes.Buffer{}
-	if err := c.t.Download(c.repo, tag, fmt.Sprintf("%v_checksums.txt", matches[1]), b, c.progress); err != nil {
-		return "", err
-	}
-
-	m := make(map[string]string)
-	for _, line := range strings.Split(b.String(), "\n") {
-		if sum, file, ok := strings.Cut(line, "  "); ok {
-			m[file] = sum
-		}
-	}
-	return m[asset], nil
 }
