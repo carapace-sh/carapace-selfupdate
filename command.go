@@ -54,9 +54,13 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 			if cmd.Flag("all").Changed {
 				opts = append(opts, WithAssetFilter(nil))
 			}
-			tags, err := New(owner, repo[c.Args[0]], opts...).Tags()
+			updater := New(owner, repo[c.Args[0]], opts...)
+			tags, err := updater.Tags()
 			if err != nil {
 				return carapace.ActionMessage(err.Error())
+			}
+			if !cmd.Flag("all").Changed {
+				tags = updater.newerTags(tags)
 			}
 			return carapace.ActionValues(tags...)
 		}),
