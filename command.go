@@ -30,6 +30,9 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 				if cmd.Flag("force").Changed {
 					opts = append(opts, WithForce(true))
 				}
+				if noVerify, _ := cmd.Flags().GetBool("no-verify"); noVerify {
+					opts = append(opts, WithNoVerify(true))
+				}
 				c := New(owner, repo[args[0]], opts...)
 				return c.Install(args[1], args[2])
 			}
@@ -40,7 +43,7 @@ func Command(owner, repository string, opts ...option) *cobra.Command {
 	cmd.Flags().BoolP("all", "a", false, "show all tags/assets")
 	cmd.Flags().BoolP("force", "f", false, "force")
 	cmd.Flags().BoolP("help", "h", false, "help for selfupdate") // TODO use cobras help flag
-	// cmd.Flags().Bool("no-verify", false, "disable checksum verification") // TODO disable verification
+	cmd.Flags().Bool("no-verify", false, "disable checksum verification")
 
 	carapace.Gen(cmd).Standalone()
 
